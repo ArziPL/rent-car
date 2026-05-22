@@ -38,7 +38,7 @@ public abstract class Vehicle {
     @Column(nullable = false)
     private String model;
 
-    @Column(nullable = false)
+    @Column(name = "manufacture_year", nullable = false)
     private int year;
 
     @Column(name = "engine_cc", nullable = false)

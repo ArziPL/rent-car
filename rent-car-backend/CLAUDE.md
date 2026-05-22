@@ -55,10 +55,10 @@ backend.rent_car_backend
 
 ### Entities
 
-- `Vehicle` → table `vehicles` — base: `id`, `brand`, `model`, `year`, `engineCc`, `pricePerDay`, `available`, `createdAt`
+- `Vehicle` → table `vehicles` — base: `id`, `brand`, `model`, `year` (column: `manufacture_year`), `engineCc`, `pricePerDay`, `available`, `createdAt`
   - `Car` → table `cars` — adds: `numSeats`, `transmission` (enum), `fuelType` (enum)
   - `Motorbike` → table `motorbikes` — adds: `licenseCategory` (enum), `motorbikeType` (enum), `abs`
-- `User` → table `users` — `email`, `password`, `role` (enum), `createdAt`
+- `User` → table `users` — `email`, `password`, `role` (enum), `createdAt`; implements `UserDetails` (Spring Security)
 - `Reservation` → table `reservations` — `user` (ManyToOne), `vehicle` (ManyToOne), `startDate`, `endDate`, `status` (enum, default PENDING), `totalPrice`, `createdAt`
 
 All `createdAt` fields use `@CreationTimestamp` (set by Hibernate on insert).
@@ -107,7 +107,7 @@ docker-compose overrides via `SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/re
 - [x] Flyway migrations (5 tables)
 - [x] JPA entities + enums
 - [x] Repositories
-- [ ] Auth — JWT, Spring Security config, register/login endpoints
+- [~] Auth — `User` implements `UserDetails`; JWT library + Security config + register/login endpoints still needed
 - [ ] Vehicles CRUD (admin only)
 - [ ] Reservations API
 - [ ] PricingStrategy (Standard + Weekend)
