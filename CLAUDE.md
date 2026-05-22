@@ -5,32 +5,12 @@ Full-stack car rental application.
 ## Stack
 - Backend: Java 17, Spring Boot 4.0.6, PostgreSQL, Docker
 - Frontend: Next.js (not started yet)
-- All services run via docker-compose (not yet configured)
+- All services run via `docker-compose.yml` at repo root
 
-## Backend Module: rent-car-backend
-
-**Build:** Maven (`mvnw`), group `backend`, artifact `rent-car-backend`
-**Package root:** `backend.rent_car_backend`
-**Main class:** `backend.rent_car_backend.RentCarBackendApplication`
-
-### Dependencies (pom.xml)
-- `spring-boot-starter-webmvc` — REST API
-- `spring-boot-starter-data-jpa` — JPA/Hibernate
-- `spring-boot-starter-security` — Spring Security
-- `spring-boot-starter-flyway` — DB migrations
-- `springdoc-openapi-starter-webmvc-ui:3.0.2` — Swagger UI at `/swagger-ui.html`
-- Test: JPA, Flyway, Security test starters
-
-**Not yet added (needed):** PostgreSQL driver, Lombok, JWT library, validation starter
-
-### Current Implementation Status
-- Main app class only — no controllers, services, repositories, entities, or DTOs yet
-- `application.properties` has only `spring.application.name=rent-car-backend` (no DB config yet)
-
-### Database Migrations (Flyway: src/main/resources/db/migration)
-- `V1__create_users_table.sql` — `users(id, email, password, role, created_at)`
-- `V2__create_cars_table.sql` — `cars(id, brand, model, year, price_per_day, available, created_at)`
-- `V3__create_reservations_table.sql` — `reservations(id, user_id→users, car_id→cars, start_date, end_date, status, total_price, created_at)`
+## Infrastructure
+- `docker-compose.yml` — starts `db` (postgres:16, port 5432) and `backend` (port 8080)
+- `rent-car-backend/Dockerfile` — two-stage Maven build → JRE runtime image
+- Backend overrides datasource URL via `SPRING_DATASOURCE_URL` env var when running in compose
 
 ## Architecture
 - Monorepo: `/rent-car-backend` and `/rent-car-frontend` folders
@@ -38,18 +18,18 @@ Full-stack car rental application.
 - JWT-based authentication (planned)
 
 ## Domain
-Three core tables: users, cars, reservations
-- Users have roles: USER or ADMIN (RBAC)
-- Cars have availability flag, price per day
-- Reservations link a user to a car with a date range and calculated total price
+- `users` — roles: USER or ADMIN (RBAC)
+- `cars` — brand/model/year/engine_cc/num_seats, availability flag, price per day
+- `motorbikes` — brand/model/year/engine_cc/license_category (A/A1/A2), availability, price per day
+- `reservations` — links user to car with date range, status, and total price
 
 ## Design Patterns
-- Strategy: PricingStrategy interface with StandardPricingStrategy and WeekendPricingStrategy (weekend days = 1.5x)
-- Polymorphism: Car extends Vehicle
+- Strategy: `PricingStrategy` interface → `StandardPricingStrategy`, `WeekendPricingStrategy` (weekend = 1.5x) — planned
+- Polymorphism: `Car` and `Motorbike` both extend `Vehicle` (`@MappedSuperclass`)
 - Always SOLID principles
 
 ## Build Order
-1. DB migrations + Entities ✅ (migrations done, entities pending)
+1. DB migrations + Entities ✅
 2. Auth (register/login, JWT, Spring Security)
 3. Cars CRUD (admin only)
 4. Reservations (user creates, admin manages)
@@ -57,5 +37,6 @@ Three core tables: users, cars, reservations
 
 ## Conventions
 - Never modify already-applied Flyway migrations, always add a new one
-- Use Lombok everywhere (add dependency when implementing)
+- Use Lombok everywhere
 - Package root: `backend.rent_car_backend`
+- See `rent-car-backend/CLAUDE.md` for backend implementation details
