@@ -3,7 +3,7 @@
 Full-stack car rental application.
 
 ## Stack
-- Backend: Java 17, Spring Boot 4.0.6, PostgreSQL, Docker
+- Backend: Java 21, Spring Boot 4.0.6, PostgreSQL, Docker
 - Frontend: Next.js (not started yet)
 - All services run via `docker-compose.yml` at repo root
 
@@ -19,13 +19,14 @@ Full-stack car rental application.
 
 ## Domain
 - `users` — roles: USER or ADMIN (RBAC)
-- `cars` — brand/model/year/engine_cc/num_seats, availability flag, price per day
-- `motorbikes` — brand/model/year/engine_cc/license_category (A/A1/A2), availability, price per day
-- `reservations` — links user to car with date range, status, and total price
+- `vehicles` — parent table; shared fields: brand, model, year, engine_cc, price_per_day, available, created_at
+  - `cars` — adds: num_seats, transmission, fuel_type
+  - `motorbikes` — adds: license_category (A/A1/A2), motorbike_type, abs
+- `reservations` — links user to vehicle (car or motorbike) with date range, status, and total price
 
 ## Design Patterns
 - Strategy: `PricingStrategy` interface → `StandardPricingStrategy`, `WeekendPricingStrategy` (weekend = 1.5x) — planned
-- Polymorphism: `Car` and `Motorbike` both extend `Vehicle` (`@MappedSuperclass`)
+- Polymorphism: `Car` and `Motorbike` extend `Vehicle` using JPA JOINED inheritance (`@Inheritance(strategy = InheritanceType.JOINED)`)
 - Always SOLID principles
 
 ## Build Order

@@ -1,9 +1,11 @@
 package backend.rent_car_backend.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,11 +13,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "motorbikes")
+@PrimaryKeyJoinColumn(name = "id")
+@DiscriminatorValue("MOTORBIKE")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -27,12 +28,10 @@ public class Motorbike extends Vehicle {
     @Column(name = "license_category", nullable = false)
     private LicenseCategory licenseCategory;
 
-    @Column(name = "price_per_day", nullable = false)
-    private BigDecimal pricePerDay;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "motorbike_type", nullable = false)
+    private MotorbikeType motorbikeType;
 
     @Column(nullable = false)
-    private boolean available;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private boolean abs;
 }

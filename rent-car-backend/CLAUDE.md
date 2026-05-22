@@ -1,6 +1,6 @@
 # rent-car-backend
 
-Spring Boot 4.0.6 / Java 17 REST API for the RentCar platform.
+Spring Boot 4.0.6 / Java 21 REST API for the RentCar platform.
 
 ## Requirements
 
@@ -29,6 +29,7 @@ Swagger UI: `http://localhost:8080/swagger-ui.html`
 | `spring-boot-starter-data-jpa` | JPA / Hibernate |
 | `spring-boot-starter-security` | Spring Security |
 | `spring-boot-starter-flyway` | DB migrations |
+| `flyway-database-postgresql` | Flyway 10+ PostgreSQL driver (required separately) |
 | `spring-boot-starter-validation` | Bean Validation |
 | `postgresql` | PostgreSQL JDBC driver (runtime) |
 | `lombok` | Boilerplate reduction |
@@ -49,37 +50,51 @@ backend.rent_car_backend
 
 ## Model Layer
 
+### Inheritance
+`Vehicle` is a full `@Entity` using `InheritanceType.JOINED` with discriminator column `vehicle_type`. `Car` and `Motorbike` are sub-entities joined by PK.
+
 ### Entities
-- `Vehicle` (`@MappedSuperclass`) — shared base: `id`, `brand`, `model`, `year`, `engineCc`
-  - `Car` → table `cars` — adds: `numSeats`, `pricePerDay`, `available`, `createdAt`
-  - `Motorbike` → table `motorbikes` — adds: `licenseCategory`, `pricePerDay`, `available`, `createdAt`
-- `User` → table `users` — `email`, `password`, `role`, `createdAt`
-- `Reservation` → table `reservations` — `user` (ManyToOne), `car` (ManyToOne), `startDate`, `endDate`, `status`, `totalPrice`, `createdAt`
+
+- `Vehicle` → table `vehicles` — base: `id`, `brand`, `model`, `year`, `engineCc`, `pricePerDay`, `available`, `createdAt`
+  - `Car` → table `cars` — adds: `numSeats`, `transmission` (enum), `fuelType` (enum)
+  - `Motorbike` → table `motorbikes` — adds: `licenseCategory` (enum), `motorbikeType` (enum), `abs`
+- `User` → table `users` — `email`, `password`, `role` (enum), `createdAt`
+- `Reservation` → table `reservations` — `user` (ManyToOne), `vehicle` (ManyToOne), `startDate`, `endDate`, `status` (enum, default PENDING), `totalPrice`, `createdAt`
+
+All `createdAt` fields use `@CreationTimestamp` (set by Hibernate on insert).
 
 ### Enums
-- `Role` — `USER`, `ADMIN`
-- `ReservationStatus` — `PENDING`, `CONFIRMED`, `CANCELLED`
-- `LicenseCategory` — `A`, `A1`, `A2`
+
+| Enum | Values |
+|---|---|
+| `Role` | `USER`, `ADMIN` |
+| `ReservationStatus` | `PENDING`, `CONFIRMED`, `CANCELLED` |
+| `LicenseCategory` | `A`, `A1`, `A2` |
+| `Transmission` | `MANUAL`, `AUTOMATIC` |
+| `FuelType` | `PETROL`, `DIESEL`, `ELECTRIC`, `HYBRID` |
+| `MotorbikeType` | `SPORT`, `NAKED`, `CRUISER`, `SCOOTER` |
 
 ## Repository Layer
 
 | Repository | Notable query methods |
 |---|---|
-| `UserRepository` | `findByEmail(String)` |
+| `VehicleRepository` | `findByAvailable(boolean)` |
 | `CarRepository` | `findByAvailable(boolean)` |
 | `MotorbikeRepository` | `findByAvailable(boolean)` |
-| `ReservationRepository` | `findByUser(User)`, `findByCar(Car)` |
+| `UserRepository` | `findByEmail(String)` |
+| `ReservationRepository` | `findByUser(User)`, `findByVehicle(Vehicle)` |
 
 ## Database Migrations (Flyway)
 
-| File | Table |
+One table per migration file. Never edit applied migrations — always add a new `Vn__` file.
+
+| File | Table created |
 |---|---|
 | `V1__create_users_table.sql` | `users` |
-| `V2__create_cars_table.sql` | `cars` |
-| `V3__create_reservations_table.sql` | `reservations` |
+| `V2__create_vehicles_table.sql` | `vehicles` |
+| `V3__create_cars_table.sql` | `cars` |
 | `V4__create_motorbikes_table.sql` | `motorbikes` |
-
-**Never edit applied migrations — always add a new `Vn__` file.**
+| `V5__create_reservations_table.sql` | `reservations` |
 
 ## Configuration
 
@@ -88,11 +103,11 @@ docker-compose overrides via `SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/re
 
 ## Implementation Status
 
-- [x] Dependencies configured
-- [x] Flyway migrations (4 tables)
+- [x] Dependencies configured (Java 21, Flyway PostgreSQL driver)
+- [x] Flyway migrations (5 tables)
 - [x] JPA entities + enums
 - [x] Repositories
 - [ ] Auth — JWT, Spring Security config, register/login endpoints
-- [ ] Cars CRUD (admin only)
+- [ ] Vehicles CRUD (admin only)
 - [ ] Reservations API
 - [ ] PricingStrategy (Standard + Weekend)
