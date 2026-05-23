@@ -48,6 +48,7 @@ public class Reservation {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status = ReservationStatus.PENDING;
