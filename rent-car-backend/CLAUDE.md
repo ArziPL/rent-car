@@ -215,8 +215,10 @@ All service classes are annotated `@Transactional` at the class level:
 **Vehicle deletion guard:** `DELETE` is rejected with 400 if any non-CANCELLED reservation references the vehicle. This protects referential integrity and audit history. Only vehicles with exclusively CANCELLED (or no) reservations can be deleted.
 
 ### DTOs
-- `CarRequest` / `CarResponse` — brand, model, year, engineCc, pricePerDay, numSeats, transmission, fuelType
-- `MotorbikeRequest` / `MotorbikeResponse` — brand, model, year, engineCc, pricePerDay, licenseCategory, motorbikeType, abs
+- `CarRequest` — brand, model, year, engineCc, pricePerDay, numSeats, transmission, fuelType, `available` (optional — allows setting availability on create/update)
+- `CarResponse` — same fields **plus** `type: "CAR"` (always set by `CarService.toResponse()`, enables frontend discriminated union)
+- `MotorbikeRequest` — brand, model, year, engineCc, pricePerDay, licenseCategory, motorbikeType, abs, `available` (optional)
+- `MotorbikeResponse` — same fields **plus** `type: "MOTORBIKE"` (always set by `MotorbikeService.toResponse()`)
 - `VehicleResponse` — id, brand, model, year, pricePerDay, available, type ("CAR"/"MOTORBIKE"); returned by `/api/vehicles`
 
 Type detection in `VehicleService.toResponse()` uses `instanceof Car ? "CAR" : "MOTORBIKE"` — no discriminator field on entity.

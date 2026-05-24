@@ -4,17 +4,19 @@ Full-stack car rental application.
 
 ## Stack
 - Backend: Java 21, Spring Boot 4.0.6, PostgreSQL, Docker
-- Frontend: Next.js 15 App Router, Tailwind CSS, shadcn/ui, Zustand, React Query (TanStack)
+- Frontend: Next.js 16 App Router, Tailwind CSS, shadcn/ui, Zustand, React Query (TanStack)
 - All services run via `docker-compose.yml` at repo root
 
 ## Infrastructure
-- `docker-compose.yml` — starts `db` (postgres:16, port 5432) and `backend` (port 8080)
+- `docker-compose.yml` — starts three services: `db` (postgres:16, port 5432), `backend` (port 8080), `frontend` (port 3000)
 - `rent-car-backend/Dockerfile` — two-stage Maven build → JRE runtime image
+- `rent-car-frontend/Dockerfile` — three-stage Node build → Next.js standalone image
 - All secrets are externalized via environment variables — **no credentials in source**
   - Copy `.env.example` → `.env` at repo root and fill in values before running compose
   - Required vars: `JWT_SECRET` (Base64 256-bit), `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_PASSWORD`
   - Optional vars: `CORS_ALLOWED_ORIGINS` (comma-separated, default `http://localhost:3000`)
-  - `docker-compose.yml` reads from `.env` via `env_file` and forwards vars to the backend service
+  - Frontend env: `BACKEND_URL` (set automatically inside Docker to `http://backend:8080`; falls back to `http://localhost:8080` in local dev)
+  - `docker-compose.yml` reads from `.env` via `env_file` and forwards vars to backend and frontend services
   - `.env` is in `.gitignore` and must never be committed
 
 ## Architecture
@@ -41,10 +43,11 @@ Full-stack car rental application.
 3. Vehicles CRUD — Cars + Motorbikes (admin write, authenticated read) ✅
 4. PricingStrategy pattern + Reservations API ✅
 5. Security hardening (secrets externalized, JWT filter, transactions, state machine, CORS) ✅
-6. Next.js frontend (architecture decided, scaffolding pending)
+6. Next.js frontend (fully scaffolded and implemented) ✅
 
 ## Conventions
 - Never modify already-applied Flyway migrations, always add a new one
 - Use Lombok everywhere
 - Package root: `backend.rent_car_backend`
 - See `rent-car-backend/CLAUDE.md` for backend implementation details
+- See `rent-car-frontend/CLAUDE.md` for frontend implementation details
