@@ -1,11 +1,13 @@
 package backend.rent_car_backend.service;
 
-import backend.rent_car_backend.dto.CarReportResponse;
+import backend.rent_car_backend.dto.VehicleReportResponse;
 import backend.rent_car_backend.model.Car;
+import backend.rent_car_backend.model.Motorbike;
 import backend.rent_car_backend.model.Reservation;
 import backend.rent_car_backend.model.ReservationStatus;
-import backend.rent_car_backend.repository.CarRepository;
+import backend.rent_car_backend.model.Vehicle;
 import backend.rent_car_backend.repository.ReservationRepository;
+import backend.rent_car_backend.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +22,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportService {
 
-    private final CarRepository carRepository;
+    private final VehicleRepository vehicleRepository;
     private final ReservationRepository reservationRepository;
 
-    public List<CarReportResponse> getCarReport() {
-        return carRepository.findAll().stream()
+    public List<VehicleReportResponse> getVehicleReport() {
+        return vehicleRepository.findAll().stream()
                 .map(this::toReportResponse)
                 .toList();
     }
 
-    private CarReportResponse toReportResponse(Car car) {
-        List<Reservation> reservations = reservationRepository.findByVehicle(car)
+    private VehicleReportResponse toReportResponse(Vehicle vehicle) {
+        List<Reservation> reservations = reservationRepository.findByVehicle(vehicle)
                 .stream()
                 .filter(r -> r.getStatus() != ReservationStatus.CANCELLED)
                 .toList();
@@ -51,22 +53,32 @@ public class ReportService {
             }
         }
 
-        return CarReportResponse.builder()
-                .id(car.getId())
-                .brand(car.getBrand())
-                .model(car.getModel())
-                .year(car.getYear())
-                .engineCc(car.getEngineCc())
-                .pricePerDay(car.getPricePerDay())
-                .available(car.isAvailable())
-                .numSeats(car.getNumSeats())
-                .transmission(car.getTransmission())
-                .fuelType(car.getFuelType())
-                .createdAt(car.getCreatedAt())
+        VehicleReportResponse.VehicleReportResponseBuilder builder = VehicleReportResponse.builder()
+                .id(vehicle.getId())
+                .brand(vehicle.getBrand())
+                .model(vehicle.getModel())
+                .year(vehicle.getYear())
+                .engineCc(vehicle.getEngineCc())
+                .pricePerDay(vehicle.getPricePerDay())
+                .available(vehicle.isAvailable())
+                .createdAt(vehicle.getCreatedAt())
                 .reservationCount(reservations.size())
                 .totalRevenue(totalRevenue)
                 .weekdayDays(weekdayDays)
-                .weekendDays(weekendDays)
-                .build();
+                .weekendDays(weekendDays);
+
+        if (vehicle instanceof Car car) {
+            builder.type("CAR")
+                    .numSeats(car.getNumSeats())
+                    .transmission(car.getTransmission())
+                    .fuelType(car.getFuelType());
+        } else if (vehicle instanceof Motorbike motorbike) {
+            builder.type("MOTORBIKE")
+                    .licenseCategory(motorbike.getLicenseCategory())
+                    .motorbikeType(motorbike.getMotorbikeType())
+                    .abs(motorbike.isAbs());
+        }
+
+        return builder.build();
     }
 }

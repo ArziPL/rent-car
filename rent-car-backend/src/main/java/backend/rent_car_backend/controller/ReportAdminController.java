@@ -1,6 +1,6 @@
 package backend.rent_car_backend.controller;
 
-import backend.rent_car_backend.dto.CarReportResponse;
+import backend.rent_car_backend.dto.VehicleReportResponse;
 import backend.rent_car_backend.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +17,8 @@ public class ReportAdminController {
 
     private final ReportService reportService;
 
-    @GetMapping("/cars")
-    public ResponseEntity<List<CarReportResponse>> getCarsReport() {
-        return ResponseEntity.ok(reportService.getCarReport());
+    @GetMapping("/vehicles")
+    public ResponseEntity<List<VehicleReportResponse>> getVehicleReport() {
+        return ResponseEntity.ok(reportService.getVehicleReport());
     }
 }

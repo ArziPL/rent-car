@@ -111,10 +111,22 @@ All credentials must be provided via environment variables:
 | `JWT_SECRET` | Base64-encoded 256-bit HS256 signing key |
 | `DB_USERNAME` | Datasource username |
 | `DB_PASSWORD` | Datasource password |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed frontend origins (default: `http://localhost:3000`) |
 
 Local dev: export vars in your shell or use an `.env` file loaded by your IDE.
 Docker Compose: vars are loaded from repo-root `.env` via `env_file` and forwarded to the backend.
 Tests: `src/test/resources/application.properties` has a **hardcoded test-only** secret — never deployed.
+
+## CORS
+
+Configured in `SecurityConfig` via a `CorsConfigurationSource` bean:
+- Allowed origins: read from `cors.allowed-origins` property → env var `CORS_ALLOWED_ORIGINS` (default `http://localhost:3000`); comma-separated for multiple origins
+- Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`
+- Allowed headers: `*`
+- `allowCredentials: true` — required for the frontend's httpOnly-cookie auth flow
+- Registered on `/**`
+
+To add origins (e.g. production domain): set `CORS_ALLOWED_ORIGINS=http://localhost:3000,https://rentcar.example.com` in the environment / `.env`.
 
 ## Auth Layer
 
@@ -268,17 +280,20 @@ PENDING ──► CONFIRMED ──► COMPLETED
 
 | Method | Path | Role | Description |
 |---|---|---|---|
-| GET | `/api/admin/report/cars` | ADMIN | All cars with reservation stats |
+| GET | `/api/admin/report/vehicles` | ADMIN | All vehicles (cars + motorbikes) with reservation stats |
 
-### Response: `CarReportResponse`
-Car spec fields (same as `CarResponse`) plus:
+### Response: `VehicleReportResponse`
+Common Vehicle fields plus:
+- `type` — `"CAR"` or `"MOTORBIKE"` (discriminator, matches `VehicleResponse.type`)
+- Car-specific (null for motorbikes): `numSeats`, `transmission`, `fuelType`
+- Motorbike-specific (null for cars): `licenseCategory`, `motorbikeType`, `abs`
 - `reservationCount` — non-cancelled reservations
 - `totalRevenue` — sum of `totalPrice` (non-cancelled)
 - `weekdayDays` — Mon–Fri rental days across all non-cancelled reservations
 - `weekendDays` — Sat–Sun rental days across all non-cancelled reservations
 
 ### Implementation
-- `ReportService` — iterates all cars, calls `reservationRepository.findByVehicle(car)`, filters out `CANCELLED`, computes stats
+- `ReportService` — calls `vehicleRepository.findAll()` (polymorphic), uses `instanceof Car` / `instanceof Motorbike` pattern to populate type-specific fields, filters out `CANCELLED` reservations
 - `ReportAdminController` — delegates to `ReportService`
 - Auto-protected by existing `/api/admin/**` → `hasRole("ADMIN")` rule (no SecurityConfig change needed)
 
@@ -292,7 +307,7 @@ Car spec fields (same as `CarResponse`) plus:
 - [x] Vehicles CRUD — Cars + Motorbikes (admin write, authenticated read), VehicleService with polymorphic type detection
 - [x] PricingStrategy — Standard + Weekend (1.5x) with @Primary on Weekend
 - [x] Reservations API — user create/list/cancel, admin list/status-update, overlap detection, pricing
-- [x] Report API — `GET /api/admin/report/cars` with per-car reservation stats
+- [x] Report API — `GET /api/admin/report/vehicles` with per-vehicle reservation stats (cars + motorbikes)
 - [x] Security hardening
   - Secrets externalized to env vars (no defaults in `application.properties`)
   - JWT filter catches `JwtException` → 401, never 500
@@ -302,3 +317,4 @@ Car spec fields (same as `CarResponse`) plus:
   - Vehicle deletion guarded against active reservations (400)
   - `DataIntegrityViolationException` → 409 in GlobalExceptionHandler
   - `AdminReservationResponse` with `userId`/`userEmail` for admin reservation listing
+- [x] CORS — `CorsConfigurationSource` bean; origins via `CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000`)
