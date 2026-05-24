@@ -10,7 +10,11 @@ Full-stack car rental application.
 ## Infrastructure
 - `docker-compose.yml` — starts `db` (postgres:16, port 5432) and `backend` (port 8080)
 - `rent-car-backend/Dockerfile` — two-stage Maven build → JRE runtime image
-- Backend overrides datasource URL via `SPRING_DATASOURCE_URL` env var when running in compose
+- All secrets are externalized via environment variables — **no credentials in source**
+  - Copy `.env.example` → `.env` at repo root and fill in values before running compose
+  - Required vars: `JWT_SECRET` (Base64 256-bit), `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_PASSWORD`
+  - `docker-compose.yml` reads from `.env` via `env_file` and forwards vars to the backend service
+  - `.env` is in `.gitignore` and must never be committed
 
 ## Architecture
 - Monorepo: `/rent-car-backend` and `/rent-car-frontend` folders
@@ -34,7 +38,8 @@ Full-stack car rental application.
 2. Auth (register/login, JWT, Spring Security) ✅
 3. Vehicles CRUD — Cars + Motorbikes (admin write, authenticated read) ✅
 4. PricingStrategy pattern + Reservations API ✅
-5. Next.js frontend
+5. Security hardening (secrets externalized, JWT filter, transactions, state machine) ✅
+6. Next.js frontend
 
 ## Conventions
 - Never modify already-applied Flyway migrations, always add a new one
