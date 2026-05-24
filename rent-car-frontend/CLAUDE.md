@@ -251,15 +251,23 @@ The HTML template mirrors the on-screen table with a print-friendly stylesheet.
 
 ## Implementation Status
 
-- [ ] Project scaffolding (Next.js 15, Tailwind, shadcn/ui, Zustand, React Query)
-- [ ] TypeScript types (`types/api.ts`)
-- [ ] Auth proxy routes (login, register, logout, me)
-- [ ] Middleware (route protection)
-- [ ] Zustand auth store + hydration in root layout
-- [ ] Navbar + AdminSidebar layout components
-- [ ] Public vehicle listing page (`/vehicles`)
-- [ ] Vehicle detail + reservation form (`/vehicles/[id]`)
-- [ ] User reservations page (`/reservations`)
-- [ ] Admin reservations page (`/admin/reservations`)
-- [ ] Admin vehicle CRUD page (`/admin/vehicles`)
-- [ ] Admin report page + HTML download (`/admin/report`)
+- [x] Project scaffolding (Next.js 16, Tailwind CSS v3, shadcn/ui primitives, Zustand, React Query)
+- [x] TypeScript types (`types/api.ts`)
+- [x] Auth proxy routes (login, register, logout, me) — sets httpOnly + role/email cookies
+- [x] Route protection (`proxy.ts` — Next.js 16 renamed middleware → proxy)
+- [x] Zustand auth store + server-side hydration in root layout (reads email/role cookies)
+- [x] Navbar (sticky dark, guest/user/admin views) + AdminSidebar layout components
+- [x] Public vehicle listing page (`/vehicles`) — RSC fetches cars+motorbikes in parallel, client-side filter/sort
+- [x] Vehicle booking dialog (`ReservationForm`) — date range picker + weekend pricing preview
+- [x] User reservations page (`/reservations`) — React Query + tab filter + cancel
+- [x] Admin reservations page (`/admin/reservations`) — stat strip + table + status actions
+- [x] Admin vehicle CRUD page (`/admin/vehicles`) — table + CarForm/MotorbikeForm dialogs
+- [x] Admin report page + HTML download (`/admin/report`) — KPIs, top-5 chart, full stats table
+- [ ] Vehicle detail page (`/vehicles/[id]`) — RSC detail + inline reservation form (not yet implemented)
+
+## Notes
+
+- Vehicle listing fetches from `/api/vehicles/cars` + `/api/vehicles/motorbikes` in parallel (not the lightweight `/api/vehicles`) to get full spec data for the card grid
+- `proxy.ts` (Next.js 16 route protection) reads the non-httpOnly `role` and `email` cookies; the JWT lives only in the httpOnly `token` cookie
+- Weekend pricing preview in the booking dialog uses the same formula as the backend: weekdays×price + weekends×price×1.5
+- Report HTML download is client-side (Blob) — no extra dependencies

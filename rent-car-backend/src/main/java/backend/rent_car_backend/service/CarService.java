@@ -44,6 +44,7 @@ public class CarService {
         car.setNumSeats(req.getNumSeats());
         car.setTransmission(req.getTransmission());
         car.setFuelType(req.getFuelType());
+        if (req.getAvailable() != null) car.setAvailable(req.getAvailable());
         return toResponse(carRepository.save(car));
     }
 
@@ -66,6 +67,7 @@ public class CarService {
 
     private CarResponse toResponse(Car car) {
         return CarResponse.builder()
+                .type("CAR")
                 .id(car.getId())
                 .brand(car.getBrand())
                 .model(car.getModel())

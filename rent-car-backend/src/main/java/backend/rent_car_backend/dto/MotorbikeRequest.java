@@ -45,4 +45,6 @@ public class MotorbikeRequest {
     private MotorbikeType motorbikeType;
 
     private boolean abs;
+
+    private Boolean available;
 }

@@ -1,0 +1,42 @@
+# ── Build output (rebuilt inside the image) ──────────────────────────────────
+target/
+
+# ── Secrets / local config ───────────────────────────────────────────────────
+.env
+.env.*
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+
+# ── Docker own files ──────────────────────────────────────────────────────────
+Dockerfile
+.dockerignore
+
+# ── Docs / project notes ──────────────────────────────────────────────────────
+README.md
+CLAUDE.md
+HELP.md
+Wymagania_do_projektu.pdf
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

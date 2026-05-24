@@ -46,4 +46,6 @@ public class CarRequest {
 
     @NotNull(message = "Fuel type is required")
     private FuelType fuelType;
+
+    private Boolean available;
 }

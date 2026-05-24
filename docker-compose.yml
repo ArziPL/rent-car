@@ -27,9 +27,27 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      # Frontend origin as seen by the browser — default keeps http://localhost:3000
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./rent-car-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      # Inside Docker the backend is reachable via its service name, not localhost.
+      # This is consumed by the Next.js API proxy routes (server-side only).
+      BACKEND_URL: http://backend:8080
+      NODE_ENV: production
+    depends_on:
+      backend:
+        condition: service_started
 
 volumes:
   postgres_data:

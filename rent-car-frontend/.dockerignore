@@ -1,0 +1,49 @@
+# ── Dependencies (reinstalled inside the image) ──────────────────────────────
+node_modules/
+
+# ── Build output (rebuilt inside the image) ──────────────────────────────────
+.next/
+out/
+coverage/
+
+# ── TypeScript cache ─────────────────────────────────────────────────────────
+tsconfig.tsbuildinfo
+
+# ── Environment ──────────────────────────────────────────────────────────────
+.env*
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+
+# ── Docker own files ──────────────────────────────────────────────────────────
+Dockerfile
+.dockerignore
+
+# ── Docs / project notes ──────────────────────────────────────────────────────
+README.md
+CLAUDE.md
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Tests (not needed in the production image) ────────────────────────────────
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

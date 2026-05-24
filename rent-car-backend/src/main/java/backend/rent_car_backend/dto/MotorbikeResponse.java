@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class MotorbikeResponse {
 
+    private String type;
     private Long id;
     private String brand;
     private String model;

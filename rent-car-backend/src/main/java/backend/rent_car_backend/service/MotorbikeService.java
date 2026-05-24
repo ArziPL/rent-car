@@ -44,6 +44,7 @@ public class MotorbikeService {
         motorbike.setLicenseCategory(req.getLicenseCategory());
         motorbike.setMotorbikeType(req.getMotorbikeType());
         motorbike.setAbs(req.isAbs());
+        if (req.getAvailable() != null) motorbike.setAvailable(req.getAvailable());
         return toResponse(motorbikeRepository.save(motorbike));
     }
 
@@ -66,6 +67,7 @@ public class MotorbikeService {
 
     private MotorbikeResponse toResponse(Motorbike motorbike) {
         return MotorbikeResponse.builder()
+                .type("MOTORBIKE")
                 .id(motorbike.getId())
                 .brand(motorbike.getBrand())
                 .model(motorbike.getModel())
