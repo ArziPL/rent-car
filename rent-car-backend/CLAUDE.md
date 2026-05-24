@@ -214,6 +214,26 @@ Interface: `service/pricing/PricingStrategy` — `BigDecimal calculate(LocalDate
 - `findByUserId(Long userId)` — derive by convention
 - `existsOverlapping(vehicleId, startDate, endDate, status)` — JPQL overlap query with typed enum param
 
+## Report API
+
+### Endpoint
+
+| Method | Path | Role | Description |
+|---|---|---|---|
+| GET | `/api/admin/report/cars` | ADMIN | All cars with reservation stats |
+
+### Response: `CarReportResponse`
+Car spec fields (same as `CarResponse`) plus:
+- `reservationCount` — non-cancelled reservations
+- `totalRevenue` — sum of `totalPrice` (non-cancelled)
+- `weekdayDays` — Mon–Fri rental days across all non-cancelled reservations
+- `weekendDays` — Sat–Sun rental days across all non-cancelled reservations
+
+### Implementation
+- `ReportService` — iterates all cars, calls `reservationRepository.findByVehicle(car)`, filters out `CANCELLED`, computes stats
+- `ReportAdminController` — delegates to `ReportService`
+- Auto-protected by existing `/api/admin/**` → `hasRole("ADMIN")` rule (no SecurityConfig change needed)
+
 ## Implementation Status
 
 - [x] Dependencies configured (Java 21, Flyway PostgreSQL driver, JWT, JaCoCo)
@@ -224,3 +244,4 @@ Interface: `service/pricing/PricingStrategy` — `BigDecimal calculate(LocalDate
 - [x] Vehicles CRUD — Cars + Motorbikes (admin write, authenticated read), VehicleService with polymorphic type detection
 - [x] PricingStrategy — Standard + Weekend (1.5x) with @Primary on Weekend
 - [x] Reservations API — user create/list/cancel, admin list/status-update, overlap detection, pricing
+- [x] Report API — `GET /api/admin/report/cars` with per-car reservation stats
