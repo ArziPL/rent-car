@@ -12,18 +12,27 @@ import { useVehicleReport } from "@/hooks/useAdminData";
 import { formatPrice } from "@/lib/utils";
 import type { VehicleReportResponse } from "@/types/api";
 
+function escapeHtml(value: string | number): string {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 function buildReportHtml(data: VehicleReportResponse[]): string {
   const rows = data
     .map(
       (v) => `
     <tr>
-      <td>${v.brand} ${v.model} (${v.year})</td>
-      <td>${v.type}</td>
-      <td>${v.pricePerDay}</td>
-      <td>${v.reservationCount}</td>
-      <td>${v.totalRevenue}</td>
-      <td>${v.weekdayDays}</td>
-      <td>${v.weekendDays}</td>
+      <td>${escapeHtml(v.brand)} ${escapeHtml(v.model)} (${escapeHtml(v.year)})</td>
+      <td>${escapeHtml(v.type)}</td>
+      <td>${escapeHtml(v.pricePerDay)}</td>
+      <td>${escapeHtml(v.reservationCount)}</td>
+      <td>${escapeHtml(v.totalRevenue)}</td>
+      <td>${escapeHtml(v.weekdayDays)}</td>
+      <td>${escapeHtml(v.weekendDays)}</td>
       <td>${v.available ? "Yes" : "No"}</td>
     </tr>`
     )

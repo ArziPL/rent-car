@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,7 +78,9 @@ class ReportServiceTest {
                 LocalDate.of(2026, 5, 29), LocalDate.of(2026, 6, 1), new BigDecimal("350.00"));
 
         when(vehicleRepository.findAll()).thenReturn(List.of(car));
-        when(reservationRepository.findByVehicle(car)).thenReturn(List.of(r1, r2));
+        // New batch query: called once with all vehicle IDs, returns non-cancelled reservations
+        when(reservationRepository.findByVehicleIdInAndStatusNot(eq(List.of(1L)), eq(ReservationStatus.CANCELLED)))
+                .thenReturn(List.of(r1, r2));
 
         List<VehicleReportResponse> result = reportService.getVehicleReport();
 
@@ -103,7 +107,8 @@ class ReportServiceTest {
                 LocalDate.of(2026, 5, 25), LocalDate.of(2026, 5, 28), new BigDecimal("240.00"));
 
         when(vehicleRepository.findAll()).thenReturn(List.of(motorbike));
-        when(reservationRepository.findByVehicle(motorbike)).thenReturn(List.of(r1));
+        when(reservationRepository.findByVehicleIdInAndStatusNot(eq(List.of(2L)), eq(ReservationStatus.CANCELLED)))
+                .thenReturn(List.of(r1));
 
         List<VehicleReportResponse> result = reportService.getVehicleReport();
 
@@ -125,13 +130,14 @@ class ReportServiceTest {
     @Test
     void getVehicleReport_excludesCancelledReservations() {
         Car car = buildCar();
+        // Only the non-cancelled reservation is returned by the new batch query
         Reservation confirmed = buildReservation(car, ReservationStatus.CONFIRMED,
                 LocalDate.of(2026, 5, 25), LocalDate.of(2026, 5, 28), new BigDecimal("300.00"));
-        Reservation cancelled = buildReservation(car, ReservationStatus.CANCELLED,
-                LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 4), new BigDecimal("300.00"));
 
         when(vehicleRepository.findAll()).thenReturn(List.of(car));
-        when(reservationRepository.findByVehicle(car)).thenReturn(List.of(confirmed, cancelled));
+        // The batch query already excludes CANCELLED — only confirmed is returned
+        when(reservationRepository.findByVehicleIdInAndStatusNot(eq(List.of(1L)), eq(ReservationStatus.CANCELLED)))
+                .thenReturn(List.of(confirmed));
 
         List<VehicleReportResponse> result = reportService.getVehicleReport();
 
@@ -145,7 +151,8 @@ class ReportServiceTest {
         Car car = buildCar();
 
         when(vehicleRepository.findAll()).thenReturn(List.of(car));
-        when(reservationRepository.findByVehicle(car)).thenReturn(List.of());
+        when(reservationRepository.findByVehicleIdInAndStatusNot(eq(List.of(1L)), eq(ReservationStatus.CANCELLED)))
+                .thenReturn(List.of());
 
         List<VehicleReportResponse> result = reportService.getVehicleReport();
 

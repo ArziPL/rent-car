@@ -20,15 +20,15 @@ export function VehicleGrid({ initialVehicles }: VehicleGridProps) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<VehicleTypeFilter>("ALL");
   const [sort, setSort] = useState<VehicleSortOrder>("priceAsc");
+  const [availableOnly, setAvailableOnly] = useState(false);
   const [bookVehicle, setBookVehicle] = useState<Vehicle | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
   const { mutate: createReservation, isPending } = useCreateReservation();
 
   const filtered = useMemo(() => {
-    let list = initialVehicles.filter(
-      (v) => filter === "ALL" || v.type === filter
-    );
+    let list = initialVehicles.filter((v) => filter === "ALL" || v.type === filter);
+    if (availableOnly) list = list.filter((v) => v.available);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter((v) =>
@@ -41,7 +41,7 @@ export function VehicleGrid({ initialVehicles }: VehicleGridProps) {
       yearDesc: (a, b) => b.year - a.year,
     };
     return [...list].sort(comparators[sort]);
-  }, [initialVehicles, query, filter, sort]);
+  }, [initialVehicles, query, filter, sort, availableOnly]);
 
   const uiRole: "guest" | "user" | "admin" = role === "ADMIN" ? "admin" : role === "USER" ? "user" : "guest";
 
@@ -84,6 +84,8 @@ export function VehicleGrid({ initialVehicles }: VehicleGridProps) {
         onFilterChange={setFilter}
         sort={sort}
         onSortChange={setSort}
+        availableOnly={availableOnly}
+        onAvailableOnlyChange={setAvailableOnly}
       />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -93,6 +95,7 @@ export function VehicleGrid({ initialVehicles }: VehicleGridProps) {
             vehicle={v}
             role={uiRole}
             onBook={() => handleBook(v)}
+            onViewDetail={() => router.push(`/vehicles/${v.id}`)}
           />
         ))}
       </div>

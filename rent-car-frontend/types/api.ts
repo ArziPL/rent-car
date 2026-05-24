@@ -61,6 +61,7 @@ export interface ReservationResponse {
   vehicleId: number;
   vehicleBrand: string;
   vehicleModel: string;
+  vehicleType: "CAR" | "MOTORBIKE";
   startDate: string;
   endDate: string;
   status: ReservationStatus;

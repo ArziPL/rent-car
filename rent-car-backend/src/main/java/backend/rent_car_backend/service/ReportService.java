@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,16 +28,24 @@ public class ReportService {
     private final ReservationRepository reservationRepository;
 
     public List<VehicleReportResponse> getVehicleReport() {
-        return vehicleRepository.findAll().stream()
-                .map(this::toReportResponse)
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        if (vehicles.isEmpty()) {
+            return List.of();
+        }
+
+        // Single batch query for all non-cancelled reservations — avoids N+1
+        List<Long> vehicleIds = vehicles.stream().map(Vehicle::getId).toList();
+        Map<Long, List<Reservation>> reservationsByVehicleId =
+                reservationRepository.findByVehicleIdInAndStatusNot(vehicleIds, ReservationStatus.CANCELLED)
+                        .stream()
+                        .collect(Collectors.groupingBy(r -> r.getVehicle().getId()));
+
+        return vehicles.stream()
+                .map(v -> toReportResponse(v, reservationsByVehicleId.getOrDefault(v.getId(), List.of())))
                 .toList();
     }
 
-    private VehicleReportResponse toReportResponse(Vehicle vehicle) {
-        List<Reservation> reservations = reservationRepository.findByVehicle(vehicle)
-                .stream()
-                .filter(r -> r.getStatus() != ReservationStatus.CANCELLED)
-                .toList();
+    private VehicleReportResponse toReportResponse(Vehicle vehicle, List<Reservation> reservations) {
 
         long weekdayDays = 0;
         long weekendDays = 0;

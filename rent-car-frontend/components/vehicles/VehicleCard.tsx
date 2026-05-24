@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Car, Bike, Users, Gauge, Fuel, ShieldCheck, BadgeCheck, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,9 +70,12 @@ export function VehicleCard({ vehicle, role, onBook, onViewDetail }: VehicleCard
       <div className="flex flex-1 flex-col gap-3 px-5 pb-5">
         <div className="flex items-baseline justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate text-[15px] font-semibold tracking-tight text-zinc-900">
+            <Link
+              href={`/vehicles/${vehicle.id}`}
+              className="truncate text-[15px] font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
+            >
               {vehicle.brand} {vehicle.model}
-            </div>
+            </Link>
             <div className="text-xs text-zinc-500">{vehicle.year}</div>
           </div>
           <div className="shrink-0 text-right">

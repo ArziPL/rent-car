@@ -14,6 +14,8 @@ interface VehicleFiltersProps {
   onFilterChange: (f: VehicleTypeFilter) => void;
   sort: VehicleSortOrder;
   onSortChange: (s: VehicleSortOrder) => void;
+  availableOnly: boolean;
+  onAvailableOnlyChange: (v: boolean) => void;
 }
 
 const FILTER_OPTIONS = [
@@ -29,6 +31,8 @@ export function VehicleFilters({
   onFilterChange,
   sort,
   onSortChange,
+  availableOnly,
+  onAvailableOnlyChange,
 }: VehicleFiltersProps) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
@@ -71,6 +75,23 @@ export function VehicleFilters({
         <option value="priceDesc">Price: high → low</option>
         <option value="yearDesc">Year: newest first</option>
       </Select>
+
+      {/* Available only toggle */}
+      <button
+        onClick={() => onAvailableOnlyChange(!availableOnly)}
+        className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition ${
+          availableOnly
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-zinc-200 bg-white text-zinc-600 hover:text-zinc-900"
+        }`}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${
+            availableOnly ? "bg-emerald-500" : "bg-zinc-400"
+          }`}
+        />
+        Available only
+      </button>
     </div>
   );
 }

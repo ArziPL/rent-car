@@ -126,7 +126,7 @@ export default function AdminReservationsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {r.vehicleId % 2 === 0 ? (
+                        {r.vehicleType === "CAR" ? (
                           <Car className="h-4 w-4 text-zinc-500" />
                         ) : (
                           <Bike className="h-4 w-4 text-zinc-500" />

@@ -11,6 +11,9 @@ import {
 import { CarForm } from "@/components/vehicles/CarForm";
 import { MotorbikeForm } from "@/components/vehicles/MotorbikeForm";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
   useAdminVehicles,
   useCreateCar, useUpdateCar,
   useCreateMotorbike, useUpdateMotorbike,
@@ -25,6 +28,7 @@ export default function AdminVehiclesPage() {
   const [carFormOpen, setCarFormOpen] = useState(false);
   const [bikeFormOpen, setBikeFormOpen] = useState(false);
   const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
 
   const { data: vehicles, isLoading } = useAdminVehicles();
   const { mutate: createCar, isPending: creatingCar } = useCreateCar();
@@ -211,7 +215,7 @@ export default function AdminVehiclesPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deleteVehicle(v.id)}
+                        onClick={() => setVehicleToDelete(v)}
                         disabled={deleting}
                         title="Delete"
                         className="hover:bg-rose-50 hover:text-rose-600"
@@ -246,6 +250,45 @@ export default function AdminVehiclesPage() {
         onSave={handleBikeSave}
         isLoading={creatingBike || updatingBike}
       />
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!vehicleToDelete} onOpenChange={(open) => { if (!open) setVehicleToDelete(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete vehicle?</DialogTitle>
+            <DialogDescription>
+              {vehicleToDelete && (
+                <>
+                  You are about to permanently delete{" "}
+                  <span className="font-semibold text-zinc-900">
+                    {vehicleToDelete.brand} {vehicleToDelete.model} ({vehicleToDelete.year})
+                  </span>
+                  . This action cannot be undone.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVehicleToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={() => {
+                if (vehicleToDelete) {
+                  deleteVehicle(vehicleToDelete.id, {
+                    onSuccess: () => setVehicleToDelete(null),
+                    onError: () => setVehicleToDelete(null),
+                  });
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

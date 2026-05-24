@@ -55,7 +55,9 @@ function NavLink({
 }
 
 export function Navbar() {
-  const { email, role, logout } = useAuthStore();
+  const email = useAuthStore((s) => s.email);
+  const role = useAuthStore((s) => s.role);
+  const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
   const isLoggedIn = !!email;
 

@@ -38,7 +38,8 @@ function Logo() {
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { email, logout } = useAuthStore();
+  const email = useAuthStore((s) => s.email);
+  const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
 
   const initials = email ? email.slice(0, 2).toUpperCase() : "AD";

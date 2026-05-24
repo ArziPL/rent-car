@@ -20,6 +20,7 @@ public class ReservationResponse {
     private Long vehicleId;
     private String vehicleBrand;
     private String vehicleModel;
+    private String vehicleType;
     private LocalDate startDate;
     private LocalDate endDate;
     private ReservationStatus status;

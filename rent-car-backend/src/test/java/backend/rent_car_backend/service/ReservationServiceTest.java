@@ -173,6 +173,9 @@ class ReservationServiceTest {
     void updateStatus_toConfirmed_updatesStatus() {
         Reservation reservation = buildReservation(ReservationStatus.PENDING);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        // Pessimistic write lock acquired before overlap check (H1 fix)
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(buildCar(true)));
+        when(reservationRepository.existsOverlapping(eq(1L), any(), any(), eq(ReservationStatus.CONFIRMED))).thenReturn(false);
         when(reservationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         ReservationResponse response = reservationService.updateStatus(1L, ReservationStatus.CONFIRMED);
@@ -225,6 +228,8 @@ class ReservationServiceTest {
     void updateStatus_toConfirmed_checksOverlap_throwsIfOverlap() {
         Reservation reservation = buildReservation(ReservationStatus.PENDING);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        // Pessimistic write lock acquired before overlap check (H1 fix)
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(buildCar(true)));
         when(reservationRepository.existsOverlapping(eq(1L), any(), any(), eq(ReservationStatus.CONFIRMED))).thenReturn(true);
 
         assertThatThrownBy(() -> reservationService.updateStatus(1L, ReservationStatus.CONFIRMED))

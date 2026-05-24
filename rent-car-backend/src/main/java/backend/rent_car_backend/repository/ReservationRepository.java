@@ -27,4 +27,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                               @Param("status") ReservationStatus status);
 
     boolean existsByVehicleIdAndStatusNot(Long vehicleId, ReservationStatus status);
+
+    /**
+     * Batch-load all reservations for a set of vehicle IDs excluding a given status.
+     * Used by ReportService to avoid N+1 queries.
+     */
+    @Query("SELECT r FROM Reservation r WHERE r.vehicle.id IN :vehicleIds AND r.status != :status")
+    List<Reservation> findByVehicleIdInAndStatusNot(
+            @Param("vehicleIds") List<Long> vehicleIds,
+            @Param("status") ReservationStatus status);
 }

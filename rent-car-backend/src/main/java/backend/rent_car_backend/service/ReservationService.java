@@ -3,6 +3,7 @@ package backend.rent_car_backend.service;
 import backend.rent_car_backend.dto.AdminReservationResponse;
 import backend.rent_car_backend.dto.ReservationRequest;
 import backend.rent_car_backend.dto.ReservationResponse;
+import backend.rent_car_backend.model.Car;
 import backend.rent_car_backend.model.Reservation;
 import backend.rent_car_backend.model.ReservationStatus;
 import backend.rent_car_backend.model.User;
@@ -103,6 +104,12 @@ public class ReservationService {
         }
 
         if (newStatus == ReservationStatus.CONFIRMED) {
+            // Acquire a pessimistic write lock on the vehicle row before the overlap check,
+            // so two concurrent admin CONFIRM calls on overlapping reservations cannot both pass.
+            vehicleRepository.findByIdForUpdate(reservation.getVehicle().getId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Vehicle not found with id: " + reservation.getVehicle().getId()));
+
             if (reservationRepository.existsOverlapping(
                     reservation.getVehicle().getId(),
                     reservation.getStartDate(),
@@ -133,6 +140,7 @@ public class ReservationService {
                 .vehicleId(r.getVehicle().getId())
                 .vehicleBrand(r.getVehicle().getBrand())
                 .vehicleModel(r.getVehicle().getModel())
+                .vehicleType(r.getVehicle() instanceof Car ? "CAR" : "MOTORBIKE")
                 .startDate(r.getStartDate())
                 .endDate(r.getEndDate())
                 .status(r.getStatus())
@@ -147,6 +155,7 @@ public class ReservationService {
                 .vehicleId(r.getVehicle().getId())
                 .vehicleBrand(r.getVehicle().getBrand())
                 .vehicleModel(r.getVehicle().getModel())
+                .vehicleType(r.getVehicle() instanceof Car ? "CAR" : "MOTORBIKE")
                 .startDate(r.getStartDate())
                 .endDate(r.getEndDate())
                 .status(r.getStatus())

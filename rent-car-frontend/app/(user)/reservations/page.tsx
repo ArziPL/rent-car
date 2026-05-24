@@ -13,12 +13,6 @@ const TABS: Array<{ label: string; value: ReservationStatus | "ALL" }> = [
   { label: "Cancelled", value: "CANCELLED" },
 ];
 
-// We use vehicleType = "CAR" as fallback since we only have the ID from the reservation.
-// In a real app we'd join with vehicle data. For now we pass type via the reservation.
-// NOTE: The backend ReservationResponse doesn't include vehicleType, so we default to CAR.
-// TODO: Enhance backend to include vehicle type in reservation response if needed.
-const FALLBACK_TYPE = "CAR" as const;
-
 export default function ReservationsPage() {
   const [tab, setTab] = useState<ReservationStatus | "ALL">("ALL");
   const { data: reservations, isLoading, error } = useReservations();
@@ -77,7 +71,7 @@ export default function ReservationsPage() {
             <ReservationCard
               key={r.id}
               reservation={r}
-              vehicleType={FALLBACK_TYPE}
+              vehicleType={r.vehicleType}
               onCancel={() => cancel(r.id)}
               isCancelling={isCancelling && cancellingId === r.id}
             />
