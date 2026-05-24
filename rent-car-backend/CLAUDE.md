@@ -73,7 +73,7 @@ All `createdAt` fields use `@CreationTimestamp` (set by Hibernate on insert).
 | Enum | Values |
 |---|---|
 | `Role` | `USER`, `ADMIN` |
-| `ReservationStatus` | `PENDING`, `CONFIRMED`, `CANCELLED` |
+| `ReservationStatus` | `PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED` |
 | `LicenseCategory` | `A`, `A1`, `A2` |
 | `Transmission` | `MANUAL`, `AUTOMATIC` |
 | `FuelType` | `PETROL`, `DIESEL`, `ELECTRIC`, `HYBRID` |
@@ -150,7 +150,7 @@ Handles: `IllegalArgumentException` → 400, `BadCredentialsException` → 401, 
 
 ### Security
 - `/api/admin/**` → requires `ROLE_ADMIN`
-- `/api/vehicles/**` → requires any authenticated user
+- `GET /api/vehicles/**` → public (guests allowed, no token required)
 - `/api/reservations/**` → requires any authenticated user (cancel validates ownership in service)
 
 ### Endpoints
@@ -201,7 +201,8 @@ Interface: `service/pricing/PricingStrategy` — `BigDecimal calculate(LocalDate
 - `endDate` must be after `startDate`
 - No overlapping CONFIRMED reservations for the same vehicle (half-open interval: `start < otherEnd AND end > otherStart`)
 - `totalPrice` calculated at creation via `WeekendPricingStrategy`
-- Only `PENDING` reservations can be cancelled by user; cannot set status back to `PENDING` via admin endpoint
+- Only `PENDING` reservations can be cancelled by user; `CONFIRMED` and `COMPLETED` reservations cannot be cancelled
+- Admin status lifecycle: `PENDING → CONFIRMED → COMPLETED` (or any → `CANCELLED`); cannot set status back to `PENDING`
 - Principal extracted via `SecurityContextHolder.getContext().getAuthentication().getName()` (returns email string, safe for `@WithMockUser` in tests)
 
 ### DTOs

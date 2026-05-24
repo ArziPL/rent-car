@@ -15,7 +15,7 @@ Full-stack car rental application.
 ## Architecture
 - Monorepo: `/rent-car-backend` and `/rent-car-frontend` folders
 - REST API consumed by Next.js frontend
-- JWT-based authentication (planned)
+- JWT-based authentication (implemented — `POST /api/auth/register`, `POST /api/auth/login`)
 
 ## Domain
 - `users` — roles: USER or ADMIN (RBAC)
@@ -25,15 +25,15 @@ Full-stack car rental application.
 - `reservations` — links user to vehicle (car or motorbike) with date range, status, and total price
 
 ## Design Patterns
-- Strategy: `PricingStrategy` interface → `StandardPricingStrategy`, `WeekendPricingStrategy` (weekend = 1.5x) — planned
+- Strategy: `PricingStrategy` interface → `StandardPricingStrategy`, `WeekendPricingStrategy` (weekend = 1.5x)
 - Polymorphism: `Car` and `Motorbike` extend `Vehicle` using JPA JOINED inheritance (`@Inheritance(strategy = InheritanceType.JOINED)`)
 - Always SOLID principles
 
 ## Build Order
 1. DB migrations + Entities ✅
-2. Auth (register/login, JWT, Spring Security)
-3. Cars CRUD (admin only)
-4. Reservations (user creates, admin manages)
+2. Auth (register/login, JWT, Spring Security) ✅
+3. Vehicles CRUD — Cars + Motorbikes (admin write, authenticated read) ✅
+4. PricingStrategy pattern + Reservations API ✅
 5. Next.js frontend
 
 ## Conventions

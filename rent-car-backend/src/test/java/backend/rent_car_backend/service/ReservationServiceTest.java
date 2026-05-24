@@ -181,6 +181,27 @@ class ReservationServiceTest {
     }
 
     @Test
+    void updateStatus_toCompleted_updatesStatus() {
+        Reservation reservation = buildReservation(ReservationStatus.CONFIRMED);
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ReservationResponse response = reservationService.updateStatus(1L, ReservationStatus.COMPLETED);
+
+        assertThat(response.getStatus()).isEqualTo(ReservationStatus.COMPLETED);
+    }
+
+    @Test
+    void cancel_completedReservation_throwsIllegalArgument() {
+        Reservation reservation = buildReservation(ReservationStatus.COMPLETED);
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+
+        assertThatThrownBy(() -> reservationService.cancel(1L, EMAIL))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PENDING");
+    }
+
+    @Test
     void updateStatus_toPending_throwsIllegalArgument() {
         Reservation reservation = buildReservation(ReservationStatus.CONFIRMED);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
