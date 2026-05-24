@@ -7,10 +7,12 @@ import backend.rent_car_backend.repository.MotorbikeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MotorbikeService {
 
@@ -45,16 +47,19 @@ public class MotorbikeService {
         return toResponse(motorbikeRepository.save(motorbike));
     }
 
+    @Transactional(readOnly = true)
     public MotorbikeResponse findById(Long id) {
         return motorbikeRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Motorbike not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public List<MotorbikeResponse> findAll() {
         return motorbikeRepository.findAll().stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<MotorbikeResponse> findAllAvailable() {
         return motorbikeRepository.findByAvailable(true).stream().map(this::toResponse).toList();
     }

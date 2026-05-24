@@ -7,10 +7,12 @@ import backend.rent_car_backend.repository.CarRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CarService {
 
@@ -45,16 +47,19 @@ public class CarService {
         return toResponse(carRepository.save(car));
     }
 
+    @Transactional(readOnly = true)
     public CarResponse findById(Long id) {
         return carRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public List<CarResponse> findAll() {
         return carRepository.findAll().stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<CarResponse> findAllAvailable() {
         return carRepository.findByAvailable(true).stream().map(this::toResponse).toList();
     }

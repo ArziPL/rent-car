@@ -1,5 +1,6 @@
 package backend.rent_car_backend.controller;
 
+import backend.rent_car_backend.dto.AdminReservationResponse;
 import backend.rent_car_backend.dto.ReservationRequest;
 import backend.rent_car_backend.dto.ReservationResponse;
 import backend.rent_car_backend.dto.UpdateReservationStatusRequest;
@@ -128,12 +129,20 @@ class ReservationControllerTest {
     }
 
     @Test
-    void adminGetAllReservations_returns200() throws Exception {
-        when(reservationService.findAll()).thenReturn(List.of(reservationResponse()));
+    void adminGetAllReservations_returns200WithUserInfo() throws Exception {
+        AdminReservationResponse adminResponse = AdminReservationResponse.builder()
+                .id(1L).vehicleId(1L).vehicleBrand("Toyota").vehicleModel("Corolla")
+                .startDate(LocalDate.now().plusDays(1)).endDate(LocalDate.now().plusDays(4))
+                .status(ReservationStatus.PENDING).totalPrice(new BigDecimal("300.00"))
+                .userId(42L).userEmail("owner@test.com")
+                .build();
+        when(reservationService.findAllAsAdmin()).thenReturn(List.of(adminResponse));
 
         adminMvc.perform(get("/api/admin/reservations"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1));
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].userId").value(42))
+                .andExpect(jsonPath("$[0].userEmail").value("owner@test.com"));
     }
 
     @Test

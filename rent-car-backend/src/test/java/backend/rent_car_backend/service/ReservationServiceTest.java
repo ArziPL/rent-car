@@ -80,7 +80,7 @@ class ReservationServiceTest {
     void create_success_returnsResponse() {
         Car car = buildCar(true);
         User user = buildUser();
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(car));
         when(reservationRepository.existsOverlapping(eq(1L), any(), any(), eq(ReservationStatus.CONFIRMED))).thenReturn(false);
         when(pricingStrategy.calculate(any(), any(), any())).thenReturn(new BigDecimal("300.00"));
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
@@ -102,7 +102,7 @@ class ReservationServiceTest {
 
     @Test
     void create_vehicleNotFound_throwsEntityNotFoundException() {
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.empty());
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.create(validRequest(), EMAIL))
                 .isInstanceOf(EntityNotFoundException.class);
@@ -110,7 +110,7 @@ class ReservationServiceTest {
 
     @Test
     void create_vehicleUnavailable_throwsIllegalArgument() {
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(buildCar(false)));
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(buildCar(false)));
 
         assertThatThrownBy(() -> reservationService.create(validRequest(), EMAIL))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -121,7 +121,7 @@ class ReservationServiceTest {
     void create_endBeforeStart_throwsIllegalArgument() {
         ReservationRequest badDates = ReservationRequest.builder()
                 .vehicleId(1L).startDate(END).endDate(START).build();
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(buildCar(true)));
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(buildCar(true)));
 
         assertThatThrownBy(() -> reservationService.create(badDates, EMAIL))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -130,7 +130,7 @@ class ReservationServiceTest {
 
     @Test
     void create_overlapExists_throwsIllegalArgument() {
-        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(buildCar(true)));
+        when(vehicleRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(buildCar(true)));
         when(reservationRepository.existsOverlapping(eq(1L), any(), any(), eq(ReservationStatus.CONFIRMED))).thenReturn(true);
 
         assertThatThrownBy(() -> reservationService.create(validRequest(), EMAIL))
@@ -212,12 +212,44 @@ class ReservationServiceTest {
     }
 
     @Test
+    void updateStatus_cancelledToCancelled_throwsIllegalArgument() {
+        Reservation reservation = buildReservation(ReservationStatus.CANCELLED);
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+
+        assertThatThrownBy(() -> reservationService.updateStatus(1L, ReservationStatus.CANCELLED))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid status transition");
+    }
+
+    @Test
+    void updateStatus_toConfirmed_checksOverlap_throwsIfOverlap() {
+        Reservation reservation = buildReservation(ReservationStatus.PENDING);
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.existsOverlapping(eq(1L), any(), any(), eq(ReservationStatus.CONFIRMED))).thenReturn(true);
+
+        assertThatThrownBy(() -> reservationService.updateStatus(1L, ReservationStatus.CONFIRMED))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("confirmed reservation");
+    }
+
+    @Test
     void findAll_returnsMappedList() {
         when(reservationRepository.findAll()).thenReturn(List.of(buildReservation(ReservationStatus.PENDING)));
 
         List<ReservationResponse> result = reservationService.findAll();
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void findAllAsAdmin_includesUserInfo() {
+        when(reservationRepository.findAll()).thenReturn(List.of(buildReservation(ReservationStatus.PENDING)));
+
+        var result = reservationService.findAllAsAdmin();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserEmail()).isEqualTo(EMAIL);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
     }
 
     @Test

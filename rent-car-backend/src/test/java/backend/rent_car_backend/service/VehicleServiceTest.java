@@ -7,6 +7,8 @@ import backend.rent_car_backend.model.Motorbike;
 import backend.rent_car_backend.model.LicenseCategory;
 import backend.rent_car_backend.model.MotorbikeType;
 import backend.rent_car_backend.model.Transmission;
+import backend.rent_car_backend.model.ReservationStatus;
+import backend.rent_car_backend.repository.ReservationRepository;
 import backend.rent_car_backend.repository.VehicleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,9 @@ class VehicleServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
+
+    @Mock
+    private ReservationRepository reservationRepository;
 
     @InjectMocks
     private VehicleService vehicleService;
@@ -53,10 +58,22 @@ class VehicleServiceTest {
     void delete_existingId_deletesVehicle() {
         Car car = buildCar(1L);
         when(vehicleRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(reservationRepository.existsByVehicleIdAndStatusNot(1L, ReservationStatus.CANCELLED)).thenReturn(false);
 
         vehicleService.delete(1L);
 
         verify(vehicleRepository).delete(car);
+    }
+
+    @Test
+    void delete_vehicleWithActiveReservations_throwsIllegalArgument() {
+        Car car = buildCar(1L);
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(reservationRepository.existsByVehicleIdAndStatusNot(1L, ReservationStatus.CANCELLED)).thenReturn(true);
+
+        assertThatThrownBy(() -> vehicleService.delete(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("active or completed reservations");
     }
 
     @Test
