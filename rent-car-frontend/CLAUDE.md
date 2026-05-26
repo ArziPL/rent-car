@@ -278,7 +278,7 @@ The HTML template mirrors the on-screen table with a print-friendly stylesheet.
 - [x] Admin reservations page (`/admin/reservations`) — stat strip + table + status actions
 - [x] Admin vehicle CRUD page (`/admin/vehicles`) — table + CarForm/MotorbikeForm dialogs
 - [x] Admin report page + HTML download (`/admin/report`) — KPIs, top-5 table, Blob download
-- [ ] Vehicle detail page (`/vehicles/[id]`) — RSC detail + inline reservation form (not yet implemented)
+- [x] Vehicle detail page (`/vehicles/[id]`) — RSC detail (two-column: image + specs card left, sticky booking panel right) + `VehicleDetailBooking` client component; fetches car or motorbike by trying both endpoints in parallel; `generateMetadata` for per-vehicle `<title>`; `revalidate = 60`; `loading.tsx` + `error.tsx` co-located
 
 ## Notes
 

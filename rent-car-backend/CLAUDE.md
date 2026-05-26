@@ -320,3 +320,7 @@ Common Vehicle fields plus:
   - `DataIntegrityViolationException` → 409 in GlobalExceptionHandler
   - `AdminReservationResponse` with `userId`/`userEmail` for admin reservation listing
 - [x] CORS — `CorsConfigurationSource` bean; origins via `CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000`)
+
+## SUPER IMPORTANT
+
+- [] check whole backend against rules from Wymagania_do_projektu.pdf 
