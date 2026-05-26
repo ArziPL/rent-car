@@ -234,8 +234,12 @@ Swapping to a different pricing rule only requires changing which bean is `@Prim
 
 #### Git Repository
 
-https://github.com/ArziPL/rent-car \
-You might be in one 😊
+https://github.com/ArziPL/rent-car
+
+Commits made regularly, and all of them signed with GPG.
+
+![Swagger](./docs/github.png)
+
 
 ---
 
