@@ -321,6 +321,33 @@ Common Vehicle fields plus:
   - `AdminReservationResponse` with `userId`/`userEmail` for admin reservation listing
 - [x] CORS — `CorsConfigurationSource` bean; origins via `CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000`)
 
-## SUPER IMPORTANT
+## PDF Compliance Audit (Wymagania_do_projektu.pdf)
 
-- [] check whole backend against rules from Wymagania_do_projektu.pdf 
+Audited 2026-05-26. The backend satisfies every code-level requirement in the PDF. Two non-code deliverables are still missing.
+
+### ✅ Pass
+
+| PDF requirement | Evidence |
+|---|---|
+| OOP + SOLID, no procedural code | Constructor DI via `@RequiredArgsConstructor` final fields; `ReservationService` depends on `PricingStrategy` interface (DIP/OCP); single-responsibility services; DTO ↔ entity boundaries |
+| Two user types + RBAC | `Role.USER`/`ADMIN`; `SecurityConfig` enforces `hasRole("ADMIN")` on `/api/admin/**` |
+| Polymorphism | `Vehicle` abstract `@Entity` + `Car`/`Motorbike` JOINED inheritance; `instanceof` discriminator in `VehicleService`/`ReservationService`/`ReportService` |
+| Design pattern | Strategy: `PricingStrategy` interface → `StandardPricingStrategy` + `WeekendPricingStrategy` (`@Primary`) |
+| Git, signed commits, meaningful names | All meaningful commits signed (`G`); no commits named just `fix`/`add`/`update` |
+| Docker | `Dockerfile` (multi-stage Maven→JRE) + `docker-compose.yml` (3 services, healthcheck) |
+| Maven standard structure | `pom.xml` with Spring Boot 4.0.6 parent, Java 21, standard `src/main`/`src/test` |
+| Spring (business logic + REST + Security) | `spring-boot-starter-webmvc`, `-security`, `-data-jpa`, `-validation` |
+| Swagger UI (Springdoc OpenAPI) | `springdoc-openapi-starter-webmvc-ui:3.0.2` → `/swagger-ui.html` |
+| Hibernate + PostgreSQL | `spring-boot-starter-data-jpa` + `postgresql` runtime driver |
+| Flyway migrations | 5 versioned files `V1__`–`V5__` in `src/main/resources/db/migration/` |
+| JUnit + ≥80% coverage (JaCoCo) | **Instruction: ~90.1%** (1731/1921), **Line: ~92.3%** (369/400). Report at `target/site/jacoco/index.html` |
+
+### ❌ Gaps (PDF deliverables, not code)
+
+- ✅ **ERD diagram** — Created at `docs/ERD.md` (Mermaid `erDiagram`, renders on GitHub / VSCode). All 5 tables with columns, types, and relationships. Embed the fenced block in README.md.
+- **README.md with screenshots** — PDF: *"dokumentację w pliku readme.md wraz z dołączonymi screenami"*. No `README.md` at repo root or in either subproject; no screenshot files exist.
+
+### ⚠️ Minor
+
+- One commit unsigned: `e219eab` ("Spring init + migrations in created") — the very first commit, predates `c78544f "GPG test"` that set up signing. Everything since is signed.
+- Per-class coverage gaps (overall still above 80%): `JwtAuthenticationFilter` (5%), `UserDetailsServiceImpl` (0%), `ReportAdminController` (0%). Not blocking, but worth tests if time allows.
